@@ -5,9 +5,9 @@
             [re-frame.core :as rf]
             [taoensso.timbre :as timbre :refer-macros [tracef debugf infof warnf errorf
                                                        trace debug info warn error]]))
-(defn go-to [app-routes route route-params]
+(defn go-to [routes route route-params]
   (debug "Going to" route route-params)
-  (accountant/navigate! (apply bidi/path-for (concat [app-routes route] (first (seq route-params))))))
+  (accountant/navigate! (apply bidi/path-for (concat [routes route] (first (seq route-params))))))
 (defn dispatch-page-event [data]
   (debug "Dispatching: " (keyword (:current-page (session/get :route)) (name (get data 0))))
   (rf/dispatch (assoc data 0 (keyword (:current-page (session/get :route)) (name (get data 0))))))
