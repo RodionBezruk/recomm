@@ -34,7 +34,7 @@
                  [ring.middleware.logger "0.5.0" :exclusions [log4j onelog]]
                  [ring/ring-json "0.4.0" :exclusions [cheshire]] ;; see: buddy
                  [compojure "1.5.2"]
-                 [com.outpace/config "0.10.0"]
+                 [cprop "0.1.10"]
                  [reagent "0.6.0"]
                  [reagent-utils "0.1.7"]
                  [re-frame "0.9.1"]

@@ -1,9 +1,10 @@
 (ns ventas.config
-  (:require [outpace.config :refer [defconfig]]
-            [outpace.config.repl :refer [reload]]
+  (:require [cprop.core :refer [load-config]]
             [mount.core :as mount :refer [defstate]]))
-(defconfig ^:required database-url)
-(defconfig ^:required cljs-port)
-(defconfig ^:required debug)
-(defconfig ^:required http-port)
-(defconfig ^:required base-url)
+(defstate config
+  :start
+    (do
+      (println "Starting config")
+      (load-config))
+  :stop
+    (do (println "Stopping config")))
