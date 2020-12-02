@@ -29,8 +29,7 @@
             [org.httpkit.server :as http-kit]
             [ventas.config :refer [config]]
             [clojure.tools.logging :as log]
-            [ventas.pretty :refer [print-info]]
-            [ventas.util :as util]
+            [ventas.util :as util :refer [print-info]]
             [ventas.common.util :as cutil])
   (:gen-class))
 (cheshire.generate/add-encoder clojure.lang.Keyword cheshire.generate/encode-str)
