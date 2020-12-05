@@ -54,6 +54,7 @@
                  [slingshot "0.12.2"]
                  [byte-streams "0.2.2"]
                  [com.novemberain/pantomime "2.9.0"]
+                 [com.walmartlabs/lacinia "0.15.0" :exclusions [clojure-future-spec]]
                  [binaryage/devtools "0.8.3"]
                  [prone "1.1.4"]
                  [org.clojars.stumitchell/clairvoyant "0.2.0"]
