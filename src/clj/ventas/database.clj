@@ -17,7 +17,7 @@
     [clojure.spec.test :as stest]
     [clojure.test.check.generators :as gen]
     [com.gfredericks.test.chuck.generators :as gen']
-    [taoensso.timbre :as timbre :refer (tracef debugf infof warnf errorf)]))
+    [taoensso.timbre :as timbre :refer (trace debug info warn error)]))
 (defn entity-spec [data]
   (if (s/valid? (:schema/type data) data)
      data
@@ -28,58 +28,23 @@
   "Generates n samples of given spec"
   (let [generator (s/gen spec)]
     (map (fn [_] (gen/generate generator)) (range n))))
-(def schema {})
-(defmacro defentity [type this-schema]
-  (let [kwtype (keyword (clojure.string/lower-case (name type)))]
-    `(do
-      (~'defrecord ~type [~@(map (fn defentity-map [k] (symbol (name k))) (keys this-schema))])
-    (~'def ~'schema (~'assoc ~'schema ~kwtype ~this-schema)))))
-(defentity User {
-  :name [{:required true :index true :fulltext true}]
-  :password [{:required true}]
-  :email [{:required true :unique :value}]
-  :avatar [{:type :ref}]
-  :status [{:type :enum :default :active :enum {:ns :user.status :values #{:pending :active :inactive :cancelled}}}]
-  :description [{:type :string}]
-  :roles [{:type :enum :default :user :enum {:ns :user.role :values #{:administrator :user}}}]
-})
-(defentity Image {
-  :extension [{:required true}]
-  :source [{:type :ref}]
-})
-(defentity ImageTag {
-  :image [{:type :ref}] 
-  :target [{:type :ref}]
-  :x [{:type :long}]
-  :y [{:type :long}]
-  :caption [{:type :string}]
-})
-(defentity Comment {
-  :source [{:type :ref :required true}]
-  :content [{:required true :fulltext true}]
-  :target [{:type :ref :required true}]
-})
-(defentity Friendship {
-  :source [{:type :ref :required true}]
-  :target [{:type :ref :required true}]
-})
 (defn start-db! []
   (print-info "Starting database")
-  (adi/connect! (get-in config [:database :url]) schema false false))
+  (d/connect (get-in config [:database :url])))
 (defn stop-db! [db]
   (print-info "Stopping database"))
 (defstate db :start (start-db!) :stop (stop-db! db))
 (defn get-partitions []
   (d/q '[:find ?ident :where [:db.part/db :db.install/partition ?p]
                              [?p :db/ident ?ident]]
-       (d/db (:connection db))))
+       (d/db db)))
 (defn entity-dates [eid]
   (first (d/q '[:find (min ?tx-time) (max ?tx-time)
                 :in $ ?e
                 :where
                   [?e _ _ ?tx _]
                   [?tx :db/txInstant ?tx-time]]
-            (d/history (d/db (:connection db))) eid)))
+            (d/history (d/db db)) eid)))
 (defn assoc-derived-fields [data eid]
   (let [dates (entity-dates eid)]
     (-> data
@@ -87,16 +52,9 @@
         (assoc :created-at (get dates 0))
         (assoc :updated-at (get dates 1)))))
 (defn touch-eid [eid]
-  (into {} (d/touch (d/entity (d/db (:connection db)) eid))))
+  (into {} (d/touch (d/entity (d/db db) eid))))
 (defn touch-eid-assoc-fields [eid]
   (assoc-derived-fields (touch-eid eid) eid))
-(defn entity-record [type data]
-  "Entity map -> entity record"
-  (let [record-fn-symbol (symbol (str "map->" (clojure.string/join (map clojure.string/capitalize (clojure.string/split (name type) #"\.")))))
-        record-fn (ns-resolve 'ventas.database record-fn-symbol)]
-    (when-not (ifn? record-fn)
-      (throw+ {:type ::not-a-function :symbol record-fn-symbol :message "This symbol does not exist or is not a function"}))
-    (record-fn data)))
 (declare process-result)
 (defn resolve-subentities [m]
   (into {}
@@ -107,11 +65,10 @@
     (for [[k v] m]
       [k (if (instance? datomic.query.EntityMap v) (:db/id v) v)])))
 (defn process-result [data]
-  (let [dequalified (util/dequalify-keywords data)
-        with-subentities (identify-subentities dequalified)]
-    (entity-record (:type with-subentities) with-subentities)))
+  (let [dequalified (util/dequalify-keywords data)]
+    (identify-subentities dequalified)))
 (defn process-transaction [type tx tempid]
-  (process-result (resolve-subentities (touch-eid-assoc-fields (d/resolve-tempid (d/db (:connection db)) (:tempids tx) tempid)))))
+  (process-result (resolve-subentities (touch-eid-assoc-fields (d/resolve-tempid (d/db db) (:tempids tx) tempid)))))
 (defn get-schema []
   (let [system-ns #{"db" "db.alter" "db.sys" "db.type" "db.install" "db.part" 
                     "db.lang" "fressian" "db.unique" "db.excise" "db.cardinality" "db.fn"}]
@@ -122,21 +79,21 @@
                           [(namespace ?ident) ?ns]
                           [((comp not contains?) ?system-ns ?ns)]
                           [_ :db.install/attribute ?e]]
-                  (d/db (:connection db)) system-ns)))))
+                  (d/db db) system-ns)))))
 (defn get-enum-values [enum]
   (d/q '[:find ?id ?ident ?value
          :in $ ?enum
          :where [?id :db/ident ?ident]
                 [(name ?ident) ?value]
                 [(namespace ?ident) ?ns]
-                [(= ?ns ?enum)]] (d/db (:connection db)) enum))
+                [(= ?ns ?enum)]] (d/db db) enum))
 (defn keyword-to-db-symbol [keyword]
   (symbol (str "?" (name keyword))))
 (defn retract-entity [eid]
   "Retract an entity by eid"
-  @(d/transact (:connection db) [[:db.fn/retractEntity eid]]))
+  @(d/transact db [[:db.fn/retractEntity eid]]))
 (defn pull [& args]
-  (apply d/pull (concat [(d/db (:connection db))] args)))
+  (apply d/pull (concat [(d/db db)] args)))
 (defn read-changes [{:keys [db-after tx-data] :as report} query]
   "Given a report from tx-report-queue and a query, gets the changes"
   (d/q query
@@ -153,7 +110,7 @@
          query (vec (concat '(:find ?id)
                   '(:in) ins
                   '(:where) wheres))]
-     (apply d/q (concat [query (d/db (:connection db))] (vals filters))))))
+     (apply d/q (concat [query (d/db db)] (vals filters))))))
 (defn entity-filtered-query
   ([type filters]
     (entity-filtered-query type (map (fn [[k v]] [ '?id (if (namespace k) k (util/qualify-keyword k type)) (if (= v :any) '_ (keyword-to-db-symbol k))]) filters) filters))
@@ -200,7 +157,7 @@
 (defmulti entity-create (fn entity-create [type params] type))
 (defmethod entity-create :default [type params]
   (let [tempid (d/tempid :db.part/user)
-        tx @(d/transact (:connection db) [(-> (util/qualify-map-keywords (util/filter-empty-vals params) type)
+        tx @(d/transact db [(-> (util/qualify-map-keywords (util/filter-empty-vals params) type)
                                               (assoc :db/id tempid)
                                               (assoc :schema/type (keyword "schema.type" (name type)))
                                               entity-precreate
@@ -223,7 +180,7 @@
       (when (nil? (:id this))
         (throw+ {:type ::invalid-update :entity this :message "The entity needs to have an ID in order to be updated"}))
       (entity-preupdate (entity-type this) this params)
-      @(d/transact (:connection db) [(assoc (util/qualify-map-keywords params (entity-type this)) :db/id (:id this))])
+      @(d/transact db [(assoc (util/qualify-map-keywords params (entity-type this)) :db/id (:id this))])
       (entity-postupdate (entity-type this) this params)
       (entity-find (:id this)))
   EntityDelete
@@ -236,7 +193,7 @@
     (:id this)))
 (defn entity-upsert [type data]
   (if (:id data)
-    (entity-update (entity-record type (entity-find (:id data))) (dissoc data :id))
+    (entity-update (entity-find (:id data)) (dissoc data :id))
     (entity-create type data)))
 (s/def :user/name string?)
 (s/def :user/password string?)
@@ -249,6 +206,21 @@
 (s/def :schema.type/user
   (s/keys :req [:user/name :user/password :user/email :user/status]
           :opt [:user/description :user/roles]))
+(s/def :product/name string?)
+(s/def :product/reference string?)
+(s/def :product/ean13 string?)
+(s/def :product/active boolean?)
+(s/def :product/description string?)
+(s/def :product/condition #{:product.condition/new :product.condition/used :product.condition/refurbished})
+(s/def :product/tags
+  (s/with-gen integer? #(gen/elements (map :id (entity-query :tag)))))
+(s/def :product/brand
+  (s/with-gen integer? #(gen/elements (map :id (entity-query :brand)))))
+(s/def :product/tax
+  (s/with-gen integer? #(gen/elements (map :id (entity-query :tax)))))
+(s/def :schema.type/product
+  (s/keys :req [:product/name]
+          :opt [:product/reference :product/ean13 :product/active :product/description :product/condition :product/tags :product/brand :product/tax]))
 (s/def :comment/source
   (s/with-gen integer? #(gen/elements (map :id (entity-query :user)))))
 (s/def :comment/target
@@ -276,13 +248,5 @@
               #(s/gen (s/keys :req [:image.tag/image :image.tag/target :image.tag/x :image.tag/y :image.tag/caption]))))
 (defn seed []
   "Seeds the database with sample data"
-  (println "Seeding users")
-  (doseq [user (generate-n :schema.type/user 10)] (entity-create :user user))
-  (println "Seeding comments")
-  (doseq [comment (generate-n :schema.type/comment 100)] (entity-create :comment comment))
-  (println "Seeding friendships")
-  (doseq [friendship (generate-n :schema.type/friendship 40)] (entity-create :friendship friendship))
-  (println "Seeding images")
-  (doseq [image (generate-n :schema.type/image 50)] (entity-create :image image))
-  (println "Seeding tags")
-  (doseq [imagetag (generate-n :schema.type/image.tag 150)] (entity-create :image.tag imagetag)))
+  (println "Seeding products")
+  (doseq [product (generate-n :schema.type/product 10)] (entity-create :product product)))
