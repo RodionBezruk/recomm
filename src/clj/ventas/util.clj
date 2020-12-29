@@ -1,5 +1,7 @@
 (ns ventas.util
-  (:require [io.aviso.ansi :as clansi]))
+  (:require [io.aviso.ansi :as clansi]
+            [clojure.java.io :as io])
+  (:import [java.io File]))
 (defn filter-vals
   [pred m]
   (into {} (filter (fn [[k v]] (pred v))
@@ -19,3 +21,11 @@
 			[(qualify-keyword k ns) v])))
 (defn print-info [str]
   (println (clansi/green str)))
+(defn find-files*
+  "Find files in `path` by `pred`."
+  [path pred]
+  (filter pred (-> path io/file file-seq)))
+(defn find-files
+  "Find files matching given `pattern`."
+  [path pattern]
+  (find-files* path #(re-matches pattern (.getName ^File %))))
