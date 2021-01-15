@@ -69,7 +69,7 @@
             [lein-git-deps "0.0.1-SNAPSHOT"]
             [venantius/ultra "0.5.1"]]
   :min-lein-version "2.6.1"
-  :source-paths ["src/clj" "src/cljs" "src/cljc" "custom-lib"]
+  :source-paths ["src/clj" "src/cljs" "src/cljc" "custom-lib" "plugins"]
   :test-paths ["test/clj" "test/cljc"]
   :jvm-opts ["-Xverify:none" "-XX:-OmitStackTraceInFastThrow"]
   :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js"]
