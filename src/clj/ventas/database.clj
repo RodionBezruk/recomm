@@ -19,8 +19,9 @@
     [com.gfredericks.test.chuck.generators :as gen']
     [taoensso.timbre :as timbre :refer (trace debug info warn error)]))
 (defn start-db! []
-  (print-info "Starting database")
-  (d/connect (get-in config [:database :url])))
+  (let [url (get-in config [:database :url])]
+    (print-info (str "Starting database, URL: " url))
+    (d/connect (get-in config [:database :url]))))
 (defn stop-db! [db]
   (print-info "Stopping database"))
 (defstate db :start (start-db!) :stop (stop-db! db))
