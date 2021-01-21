@@ -9,6 +9,7 @@
             [ventas.routes :refer [route-parents routes]]
             [ventas.components.notificator]
             [ventas.util :as util]
+            [ventas.plugin :as plugin]
             [soda-ash.core :as sa]))
 (defn skeleton [contents]
   (info "Rendering...")
@@ -26,4 +27,5 @@
           ^{:key current-page} contents]]]))
 (defmethod pages :frontend []
   [skeleton
-    [:h2 "Test frontend"]])
+    [:h2 "Test frontend"]
+    [plugin/widget :plugins.featured-products/list]])
