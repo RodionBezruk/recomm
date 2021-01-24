@@ -22,14 +22,19 @@
             [re-frame-tracer.core :refer [tracer]]
             [ventas.routes :refer [route-parents routes]]
             [ventas.pages.interface :as p]
+            [ventas.plugins.featured-products.core]
+            [ventas.pages.backend]
+            [ventas.pages.backend.playground]
+            [ventas.pages.backend.users]
+            [ventas.pages.backend.users.edit]
+            [ventas.pages.frontend]
+            [ventas.pages.frontend.index]
             )
   (:require-macros
     [cljs.core.async.macros :as asyncm :refer (go go-loop)]
     [ventas.util-macros :as util-macros :refer [swap-input-value! require-pages require-plugins]]))
 (enable-console-print!)
 (timbre/set-level! :debug)
-(require-pages)
-(require-plugins)
 (def route-names {
   :frontend "Frontend"
   :frontend.index "Inicio"
