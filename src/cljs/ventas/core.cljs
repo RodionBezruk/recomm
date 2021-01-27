@@ -21,7 +21,7 @@
             [clairvoyant.core :refer-macros [trace-forms]]
             [re-frame-tracer.core :refer [tracer]]
             [ventas.routes :refer [route-parents routes]]
-            [ventas.pages.interface :as p]
+            [ventas.page :as p]
             [ventas.plugins.featured-products.core]
             [ventas.pages.backend]
             [ventas.pages.backend.playground]
