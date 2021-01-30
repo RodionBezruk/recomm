@@ -69,17 +69,17 @@
             [lein-git-deps "0.0.1-SNAPSHOT"]
             [venantius/ultra "0.5.1"]]
   :min-lein-version "2.6.1"
-  :source-paths ["src/clj" "src/cljs" "src/cljc" "custom-lib" "plugins"]
+  :source-paths ["src/clj" "src/cljs" "src/cljc" "custom-lib"]
   :test-paths ["test/clj" "test/cljc"]
   :jvm-opts ["-Xverify:none" "-XX:-OmitStackTraceInFastThrow"]
   :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js"]
   :uberjar-name "ventas.jar"
   :main ventas.server
-  :repl-options {:init-ns user :port 4001 :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+  :repl-options {:init-ns user}
   :aliases {"config" ["run" "-m" "outpace.config.generate"]}
   :cljsbuild {:builds
               [{:id "app"
-                :source-paths ["src/cljs" "src/cljc" "custom-lib" "plugins"]
+                :source-paths ["src/cljs" "src/cljc" "custom-lib"]
                 :figwheel {:on-jsload "ventas.core/on-figwheel-reload"}
                 :compiler {:main ventas.core
                            :asset-path "js/compiled/out"
@@ -89,12 +89,12 @@
                            :source-map-timestamp true
                            :preloads [devtools.preload]}}
                {:id "test"
-                :source-paths ["src/cljs" "test/cljs" "src/cljc" "test/cljc" "custom-lib" "plugins"]
+                :source-paths ["src/cljs" "test/cljs" "src/cljc" "test/cljc" "custom-lib"]
                 :compiler {:output-to "resources/public/js/compiled/testable.js"
                            :main ventas.test-runner
                            :optimizations :none}}
                {:id "min"
-                :source-paths ["src/cljs" "src/cljc" "custom-lib" "plugins"]
+                :source-paths ["src/cljs" "src/cljc" "custom-lib"]
                 :jar true
                 :compiler {:main ventas.core
                            :output-to "resources/public/js/compiled/ventas.js"
@@ -123,7 +123,8 @@
                                    [com.gfredericks/test.chuck "0.2.7"]]
                     :plugins [[lein-figwheel "0.5.4-4"]
                               [lein-doo "0.1.6"]]
-                    :source-paths ["dev"]}
+                    :source-paths ["dev"]
+                    :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}
               :repl {:dependencies [[org.clojure/test.check "0.9.0"]
                                     [com.gfredericks/test.chuck "0.2.7"]]}
               :uberjar {:source-paths ^:replace ["src/clj" "src/cljc" "custom-lib"]

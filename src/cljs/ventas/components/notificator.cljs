@@ -1,7 +1,6 @@
 (ns ventas.components.notificator
   (:require [ventas.util :as util]
             [soda-ash.core :as sa]
-            [clojure.string :as s]
             [re-frame.core :as rf]))
 (defn bu-notificator []
   "Displays notifications"

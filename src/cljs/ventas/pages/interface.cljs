@@ -1,4 +1,4 @@
-(ns ventas.page
+(ns ventas.pages.interface
   (:require [reagent.session :as session]))
 (defmulti pages identity)
 (defmethod pages :not-found []

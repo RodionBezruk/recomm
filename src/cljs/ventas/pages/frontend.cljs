@@ -5,11 +5,10 @@
             [bidi.bidi :as bidi]
             [re-frame-datatable.core :as dt]
             [taoensso.timbre :as timbre :refer-macros [trace debug info warn error]]
-            [ventas.page :refer [pages]]
+            [ventas.pages.interface :refer [pages]]
             [ventas.routes :refer [route-parents routes]]
             [ventas.components.notificator]
             [ventas.util :as util]
-            [ventas.plugin :as plugin]
             [soda-ash.core :as sa]))
 (defn skeleton [contents]
   (info "Rendering...")
@@ -27,7 +26,4 @@
           ^{:key current-page} contents]]]))
 (defmethod pages :frontend []
   [skeleton
-    [:div
-      [:h2 "Test frontend"]
-      [plugin/widget :plugins.featured-products/list]
-      [:h3 "Test"]]])
+    [:h2 "Test frontend"]])
