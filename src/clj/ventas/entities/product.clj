@@ -19,4 +19,12 @@
               #(gen/elements (map :id (db/entity-query :file)))))
 (s/def :schema.type/product
   (s/keys :req [:product/name]
-          :opt [:product/reference :product/ean13 :product/active :product/description :product/condition :product/tags :product/brand :product/tax]))
+          :opt [:product/reference
+                :product/ean13
+                :product/active
+                :product/description
+                :product/condition
+                :product/tags
+                :product/brand
+                :product/tax
+                :product/images]))
