@@ -8,6 +8,7 @@
             [ventas.page :refer [pages]]
             [ventas.routes :refer [route-parents routes]]
             [ventas.components.notificator]
+            [ventas.components.product-listing :refer [products-list]]
             [ventas.util :as util]
             [ventas.plugin :as plugin]
             [soda-ash.core :as sa]))
@@ -30,4 +31,5 @@
     [:div
       [:h2 "Test frontend"]
       [plugin/widget :plugins.featured-products/list]
+      [products-list]
       [:h3 "Test"]]])

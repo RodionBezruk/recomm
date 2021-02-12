@@ -46,10 +46,10 @@
    :url "playground/"}
   {:route :frontend
    :name "Inicio"
-   :url "frontend/"}
+   :url "frontend"}
   {:route :frontend.index
    :name "Índice"
-   :url "index"}
+   :url "/index"}
   {:route :not-found
    :url true}])
 (def routes (compile-routes raw-routes))

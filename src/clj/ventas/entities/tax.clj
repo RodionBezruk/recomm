@@ -8,3 +8,7 @@
 (s/def :tax/amount double?)
 (s/def :schema.type/tax
   (s/keys :req [:tax/name :tax/type :tax/amount]))
+(defmethod db/entity-json :tax [entity]
+  (-> entity
+      (dissoc :created-at)
+      (dissoc :updated-at)))

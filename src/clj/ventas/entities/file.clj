@@ -8,8 +8,8 @@
 (s/def :file/extension #{:file.extension/jpg :file.extension/gif :file.extension/png :file.extension/tiff})
 (s/def :schema.type/file
   (s/keys :req [:file/extension]))
-(defmethod db/entity-preseed :file [entity-data]
-  (-> entity-data (assoc :file-extension :file.extension/jpg)))
+(defmethod db/entity-preseed :file [type entity-data]
+  (-> entity-data (assoc :file/extension :file.extension/jpg)))
 (defmethod db/entity-postseed :file [entity]
   (let [file (rand-nth (find-files "resources/seeds/files" (re-pattern ".*?")))]
     (io/copy file (io/file (str "resources/public/img/" (:id entity) ".jpg")))))

@@ -34,7 +34,7 @@
     [cljs.core.async.macros :as asyncm :refer (go go-loop)]
     [ventas.util-macros :as util-macros :refer [swap-input-value! require-pages require-plugins]]))
 (enable-console-print!)
-(timbre/set-level! :debug)
+(timbre/set-level! :trace)
 (def route-names {
   :frontend "Frontend"
   :frontend.index "Inicio"
