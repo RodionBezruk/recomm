@@ -60,8 +60,6 @@
 (def shared-ws-channel (atom nil))
 (def shared-ws-mult (atom nil))
 (defmulti ws-event-handler (fn [message client-id ws-channel req] (:name message)))
-(defn ws-event-handler [message state]
-  true)
 (defmulti ws-request-handler (fn [message state] (:name message)))
 (defmethod ws-request-handler :entities.remove [message state]
   (db/entity-delete (db/entity-find (get-in message [:params :id]))))
@@ -253,9 +251,9 @@
       (wrap-defaults site-defaults)
       wrap-gzip))
 (def http-debug-handler (wrap-reload http-handler {:dirs ["src/clj"]}))
-(defn stop-server! [server]
+(defn stop-server! [stop-fn]
   (print-info "Stopping server")
-  (when (ifn? server) (server)))
+  (when (ifn? stop-fn) (stop-fn)))
 (defn start-server! [& [port]]
   (print-info "Starting server")
   (let [port (Integer. (or port (:http-port config) 10555))
