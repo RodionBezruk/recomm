@@ -4,11 +4,12 @@
             [com.gfredericks.test.chuck.generators :as gen']
             [ventas.database :as db]))
 (s/def :tax/name string?)
-(s/def :tax/type #{:tax.type/percentage :tax.type/amount})
+(s/def :tax/kind #{:tax.kind/percentage :tax.kind/amount})
 (s/def :tax/amount double?)
 (s/def :schema.type/tax
   (s/keys :req [:tax/name :tax/type :tax/amount]))
 (defmethod db/entity-json :tax [entity]
   (-> entity
-      (dissoc :created-at)
-      (dissoc :updated-at)))
+    (dissoc :type)
+    (dissoc :created-at)
+    (dissoc :updated-at)))
