@@ -111,8 +111,10 @@
        :name (:user/name a)
        :email (:user/email a)}) (concat (map :friendship/target (:friendship/_source results))
                                         (map :friendship/source (:friendship/_target results))))))
+(defmethod ws-request-handler :products/get [message state]
+  (db/entity-json (db/entity-find (read-string (get-in message [:params :id])))))
 (defmethod ws-request-handler :products/list [message state]
-  (db/entity-query :product))
+  (map db/entity-json (db/entity-query :product)))
 (defmethod ws-request-handler :db.pull [message state]
   (d/pull (d/db (:connection db/db)) (get-in message [:params :query]) (get-in message [:params :id])))
 (defmethod ws-request-handler :db.query [message state]
